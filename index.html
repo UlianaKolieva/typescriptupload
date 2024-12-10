@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Node.js</title>
+    <meta charset="utf-8" />
+    <style>
+        #image-preview>*{float:left;}
+        .image-container>img{max-width: 300px;max-height: 300px;}
+    </style>
+</head>
+<body>
+    <h1>Загрузите файл</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label>Файл</label><br>
+        <input type="file" name="filedata" /><br><br>
+        <input type="submit" value="Send" />
+      </form>
+    <div id="files"></div>
+    <div id="image-preview"></div>
+
+<script>
+    function uploadImages(event) {
+        const files = event.target.files;
+
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append('filedata', files[i]);
+        }
+
+        fetch('/upload', {
+            method: 'POST',
+            body: formData,
+        })
+        .then(response => response.text())
+        .then(() => {
+            loadImages();
+            event.target.value = '';
+        })
+        .catch(error => console.error('Error uploading images:', error));
+    }
+
+    function loadImages() {
+        fetch('/images')
+            .then(response => response.json())
+            .then(images => {
+                const previewContainer = document.getElementById('image-preview');
+                previewContainer.innerHTML = '';
+
+                images.forEach(image => {
+                    const imageContainer = document.createElement('div');
+                    imageContainer.classList.add('image-container');
+
+                    const img = document.createElement('img');
+                    img.src = `/uploads/${image}`;
+
+                    imageContainer.appendChild(img);
+                    previewContainer.appendChild(imageContainer);
+                });
+            })
+            .catch(error => console.error('Ошибка загрузки изображений:', error));
+    }
+
+    window.onload = loadImages;
+
+</script>
+</body>
+<html>
